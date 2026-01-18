@@ -1,12 +1,14 @@
 package com.hr_system.repository;
 
 import com.hr_system.entity.Employee;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,6 +20,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
     boolean existsByEmailAndEmployeeIdNot(String email, UUID employeeId);
 
     List<Employee> findByEmailContainingIgnoreCase(String email);
+
+    List<Employee> findAllByIsActiveTrue();
+
+    Optional<Employee> findByEmployeeIdAndIsActiveTrue(UUID employeeId);
 
     List<Employee> findByFirstNameContainingIgnoreCase(String firstName);
 

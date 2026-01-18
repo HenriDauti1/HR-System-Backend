@@ -1,20 +1,19 @@
 package com.hr_system.service;
 
-import com.hr_system.dto.CreateDepartmentRequest;
-import com.hr_system.dto.DepartmentResponse;
-import com.hr_system.dto.UpdateDepartmentRequest;
 import com.hr_system.entity.Country;
 import com.hr_system.entity.Department;
 import com.hr_system.exception.DuplicateResourceException;
 import com.hr_system.exception.ResourceNotFoundException;
 import com.hr_system.repository.CountryRepository;
 import com.hr_system.repository.DepartmentRepository;
+import com.hr_system.requests.CreateDepartmentRequest;
+import com.hr_system.requests.UpdateDepartmentRequest;
+import com.hr_system.responses.DepartmentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,70 +25,17 @@ public class DepartmentService {
     private final CountryRepository countryRepository;
 
     @Transactional(readOnly = true)
-    public List<DepartmentResponse> getAllDepartments(Map<String, String> filterParams) {
-        List<Department> departments;
-
-        if (filterParams != null && !filterParams.isEmpty()) {
-            String departmentId = filterParams.get("departmentId");
-            String departmentName = filterParams.get("departmentName");
-            String countryId = filterParams.get("countryId");
-            String countryName = filterParams.get("countryName");
-            String isActive = filterParams.get("isActive");
-
-            if (departmentId != null) {
-                departments = departmentRepository.findByDepartmentId(UUID.fromString(departmentId));
-            } else if (departmentName != null) {
-                departments = departmentRepository.findByDepartmentNameContainingIgnoreCase(departmentName);
-            } else if (countryId != null) {
-                departments = departmentRepository.findByCountry_CountryId(UUID.fromString(countryId));
-            } else if (countryName != null) {
-                departments = departmentRepository.findByCountry_CountryName(countryName);
-            } else if (isActive != null) {
-                departments = departmentRepository.findByIsActive(Boolean.parseBoolean(isActive));
-            } else {
-                departments = departmentRepository.findAll();
-            }
-        } else {
-            departments = departmentRepository.findAll();
-        }
-
-        return departments.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<DepartmentResponse> searchDepartments(String keyword) {
-        List<Department> departments;
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            departments = departmentRepository.searchDepartments(keyword.trim());
-        } else {
-            departments = departmentRepository.findAll();
-        }
-
-        return departments.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public DepartmentResponse getDepartmentById(UUID id) {
-        Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + id));
-        return convertToResponse(department);
+    public List<DepartmentResponse> getAllDepartments() {
+        List<Department> departments = departmentRepository.findAllByIsActiveTrue();
+        return departments.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Transactional
     public DepartmentResponse createDepartment(CreateDepartmentRequest request) {
-        Country country = countryRepository.findById(request.getCountryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Country not found with id: " + request.getCountryId()));
+        Country country = countryRepository.findByCountryIdAndIsActiveTrue(request.getCountryId()).orElseThrow(() -> new ResourceNotFoundException("Country not found with id: " + request.getCountryId()));
 
-        if (departmentRepository.existsByDepartmentNameAndCountry_CountryIdAndDepartmentIdNot(
-                request.getDepartmentName(), request.getCountryId(), UUID.randomUUID())) {
-            throw new DuplicateResourceException(
-                    "Department with name '" + request.getDepartmentName() +
-                            "' already exists in " + country.getCountryName());
+        if (departmentRepository.existsByDepartmentNameAndCountry_CountryIdAndDepartmentIdNot(request.getDepartmentName(), request.getCountryId(), UUID.randomUUID())) {
+            throw new DuplicateResourceException("Department with name '" + request.getDepartmentName() + "' already exists in " + country.getCountryName());
         }
 
         Department department = new Department();
@@ -103,17 +49,12 @@ public class DepartmentService {
 
     @Transactional
     public DepartmentResponse updateDepartment(UUID id, UpdateDepartmentRequest request) {
-        Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + id));
+        Department department = departmentRepository.findByDepartmentIdAndIsActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + id));
 
-        Country country = countryRepository.findById(request.getCountryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Country not found with id: " + request.getCountryId()));
+        Country country = countryRepository.findByCountryIdAndIsActiveTrue(request.getCountryId()).orElseThrow(() -> new ResourceNotFoundException("Country not found with id: " + request.getCountryId()));
 
-        if (departmentRepository.existsByDepartmentNameAndCountry_CountryIdAndDepartmentIdNot(
-                request.getDepartmentName(), request.getCountryId(), id)) {
-            throw new DuplicateResourceException(
-                    "Department with name '" + request.getDepartmentName() +
-                            "' already exists in " + country.getCountryName());
+        if (departmentRepository.existsByDepartmentNameAndCountry_CountryIdAndDepartmentIdNot(request.getDepartmentName(), request.getCountryId(), id)) {
+            throw new DuplicateResourceException("Department with name '" + request.getDepartmentName() + "' already exists in " + country.getCountryName());
         }
 
         department.setDepartmentName(request.getDepartmentName());
@@ -128,11 +69,8 @@ public class DepartmentService {
 
     @Transactional
     public void deleteDepartment(UUID id) {
-        Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + id));
-
-        department.setIsActive(false);
-        departmentRepository.save(department);
+        departmentRepository.findByDepartmentIdAndIsActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + id));
+        departmentRepository.delete(id);
     }
 
     private DepartmentResponse convertToResponse(Department department) {

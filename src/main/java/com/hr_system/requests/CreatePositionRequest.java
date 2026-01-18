@@ -1,4 +1,4 @@
-package com.hr_system.dto;
+package com.hr_system.requests;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdatePositionRequest {
+public class CreatePositionRequest {
     
     @NotBlank(message = "Position name is required")
     private String positionName;
     
-    private Boolean isActive;
+    private Boolean isActive = true;
 }

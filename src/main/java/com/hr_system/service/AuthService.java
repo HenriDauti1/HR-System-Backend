@@ -1,34 +1,36 @@
 package com.hr_system.service;
 
-import com.hr_system.dto.LoginRequest;
-import com.hr_system.dto.LoginResponse;
+import com.hr_system.requests.LoginRequest;
+import com.hr_system.responses.LoginResponse;
+import com.hr_system.entity.User;
+import com.hr_system.repository.LoginRepository;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
 
-    private static final String ADMIN_EMAIL = "admin@hrms.com";
-    private static final String ADMIN_PASSWORD = "admin123";
+    private final LoginRepository loginRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    private static final String COORDINATOR_EMAIL = "coordinator@hrms.com";
-    private static final String COORDINATOR_PASSWORD = "coordinator123";
+
+    public AuthService(LoginRepository loginRepository, PasswordEncoder passwordEncoder) {
+        this.loginRepository = loginRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public LoginResponse login(LoginRequest request, HttpSession session) {
-        String email = request.getEmail();
-        String password = request.getPassword();
 
-        if (ADMIN_EMAIL.equals(email) && ADMIN_PASSWORD.equals(password)) {
-            session.setAttribute("userRole", "CRUD");
-            return new LoginResponse("CRUD");
+        User user = loginRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid email or password");
         }
 
-        if (COORDINATOR_EMAIL.equals(email) && COORDINATOR_PASSWORD.equals(password)) {
-            session.setAttribute("userRole", "READONLY");
-            return new LoginResponse("READONLY");
-        }
-
-        throw new RuntimeException("Invalid email or password");
+        session.setAttribute("userRole", user.getRole());
+        return new LoginResponse(user.getId(),user.getFirstName(),user.getLastName(),user.getEmail(),user.getRole());
     }
 
     public void logout(HttpSession session) {

@@ -1,12 +1,13 @@
 package com.hr_system.controller;
 
-import com.hr_system.dto.ContractResponse;
-import com.hr_system.dto.CreateContractRequest;
-import com.hr_system.dto.UpdateContractRequest;
+import com.hr_system.requests.CreateContractRequest;
+import com.hr_system.requests.UpdateContractRequest;
+import com.hr_system.responses.ContractResponse;
 import com.hr_system.service.ContractService;
+import com.hr_system.util.ApiResponse;
+import com.hr_system.util.ApiResponseUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,50 +16,27 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/contracts")
+@RequestMapping("/v1/contracts")
 @RequiredArgsConstructor
 public class ContractController {
 
     private final ContractService contractService;
 
     @GetMapping
-    public ResponseEntity<List<ContractResponse>> getAllContracts(
-            @RequestParam(required = false) Map<String, String> filterParams) {
-        List<ContractResponse> contracts = contractService.getAllContracts(filterParams);
-        return ResponseEntity.ok(contracts);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<ContractResponse>> searchContracts(
-            @RequestParam(required = false) String keyword) {
-        List<ContractResponse> contracts = contractService.searchContracts(keyword);
-        return ResponseEntity.ok(contracts);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ContractResponse> getContractById(@PathVariable UUID id) {
-        ContractResponse contract = contractService.getContractById(id);
-        return ResponseEntity.ok(contract);
+    public ResponseEntity<ApiResponse<List<ContractResponse>>> getAllContracts() {
+        List<ContractResponse> contracts = contractService.getAllContracts();
+        return ResponseEntity.status(200).body(ApiResponseUtils.createResponse("success", "Contracts retrieved successfully", contracts));
     }
 
     @PostMapping
-    public ResponseEntity<ContractResponse> createContract(
-            @Valid @RequestBody CreateContractRequest request) {
+    public ResponseEntity<ApiResponse<ContractResponse>> createContract(@Valid @RequestBody CreateContractRequest request) {
         ContractResponse contract = contractService.createContract(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(contract);
+        return ResponseEntity.status(201).body(ApiResponseUtils.createResponse("success", "Contract created successfully", contract));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ContractResponse> updateContract(
-            @PathVariable UUID id,
-            @Valid @RequestBody UpdateContractRequest request) {
+    public ResponseEntity<ApiResponse<ContractResponse>> updateContract(@PathVariable UUID id, @Valid @RequestBody UpdateContractRequest request) {
         ContractResponse contract = contractService.updateContract(id, request);
-        return ResponseEntity.ok(contract);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContract(@PathVariable UUID id) {
-        contractService.deleteContract(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(200).body(ApiResponseUtils.createResponse("success", "Contract updated successfully", contract));
     }
 }

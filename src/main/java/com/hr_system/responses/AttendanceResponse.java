@@ -1,6 +1,5 @@
-package com.hr_system.dto;
+package com.hr_system.responses;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,14 +11,11 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateAttendanceRequest {
-
-    @NotNull(message = "Employee is required")
+public class AttendanceResponse {
+    private UUID attendanceId;
     private UUID employeeId;
-
-    @NotNull(message = "Attendance date is required")
+    private String employeeName;
     private LocalDate attendanceDate;
-
     private OffsetDateTime checkIn;
     private OffsetDateTime checkOut;
 }

@@ -1,13 +1,13 @@
 package com.hr_system.service;
 
-import com.hr_system.dto.ContractResponse;
-import com.hr_system.dto.CreateContractRequest;
-import com.hr_system.dto.UpdateContractRequest;
 import com.hr_system.entity.Contract;
 import com.hr_system.entity.Employee;
 import com.hr_system.exception.ResourceNotFoundException;
 import com.hr_system.repository.ContractRepository;
 import com.hr_system.repository.EmployeeRepository;
+import com.hr_system.requests.CreateContractRequest;
+import com.hr_system.requests.UpdateContractRequest;
+import com.hr_system.responses.ContractResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,58 +25,14 @@ public class ContractService {
     private final EmployeeRepository employeeRepository;
 
     @Transactional(readOnly = true)
-    public List<ContractResponse> getAllContracts(Map<String, String> filterParams) {
-        List<Contract> contracts;
-
-        if (filterParams != null && !filterParams.isEmpty()) {
-            String contractId = filterParams.get("contractId");
-            String employeeId = filterParams.get("employeeId");
-            String contractType = filterParams.get("contractType");
-
-            if (contractId != null) {
-                contracts = contractRepository.findByContractId(UUID.fromString(contractId));
-            } else if (employeeId != null) {
-                contracts = contractRepository.findByEmployee_EmployeeId(UUID.fromString(employeeId));
-            } else if (contractType != null) {
-                contracts = contractRepository.findByContractType(contractType);
-            } else {
-                contracts = contractRepository.findAll();
-            }
-        } else {
-            contracts = contractRepository.findAll();
-        }
-
-        return contracts.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<ContractResponse> searchContracts(String keyword) {
-        List<Contract> contracts;
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            contracts = contractRepository.searchContracts(keyword.trim());
-        } else {
-            contracts = contractRepository.findAll();
-        }
-
-        return contracts.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public ContractResponse getContractById(UUID id) {
-        Contract contract = contractRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Contract not found with id: " + id));
-        return convertToResponse(contract);
+    public List<ContractResponse> getAllContracts() {
+        List<Contract> contracts = contractRepository.findAllByEmployee_IsActiveTrue();
+        return contracts.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Transactional
     public ContractResponse createContract(CreateContractRequest request) {
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + request.getEmployeeId()));
+        Employee employee = employeeRepository.findByEmployeeIdAndIsActiveTrue(request.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + request.getEmployeeId()));
 
         if (request.getEndDate() != null && !request.getEndDate().isAfter(request.getStartDate())) {
             throw new IllegalArgumentException("End date must be after start date");
@@ -95,11 +51,9 @@ public class ContractService {
 
     @Transactional
     public ContractResponse updateContract(UUID id, UpdateContractRequest request) {
-        Contract contract = contractRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Contract not found with id: " + id));
+        Contract contract = contractRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Contract not found with id: " + id));
 
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + request.getEmployeeId()));
+        Employee employee = employeeRepository.findByEmployeeIdAndIsActiveTrue(request.getEmployeeId()).orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + request.getEmployeeId()));
 
         if (request.getEndDate() != null && !request.getEndDate().isAfter(request.getStartDate())) {
             throw new IllegalArgumentException("End date must be after start date");
@@ -113,13 +67,6 @@ public class ContractService {
 
         Contract updatedContract = contractRepository.save(contract);
         return convertToResponse(updatedContract);
-    }
-
-    @Transactional
-    public void deleteContract(UUID id) {
-        Contract contract = contractRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Contract not found with id: " + id));
-        contractRepository.delete(contract);
     }
 
     private ContractResponse convertToResponse(Contract contract) {

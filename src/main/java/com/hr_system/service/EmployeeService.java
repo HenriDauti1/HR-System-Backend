@@ -1,12 +1,12 @@
 package com.hr_system.service;
 
-import com.hr_system.dto.CreateEmployeeRequest;
-import com.hr_system.dto.EmployeeResponse;
-import com.hr_system.dto.UpdateEmployeeRequest;
 import com.hr_system.entity.Employee;
 import com.hr_system.exception.DuplicateResourceException;
 import com.hr_system.exception.ResourceNotFoundException;
 import com.hr_system.repository.EmployeeRepository;
+import com.hr_system.requests.CreateEmployeeRequest;
+import com.hr_system.requests.UpdateEmployeeRequest;
+import com.hr_system.responses.EmployeeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,9 +36,7 @@ public class EmployeeService {
             String isActive = filterParams.get("isActive");
 
             if (employeeId != null) {
-                employees = employeeRepository.findById(UUID.fromString(employeeId))
-                        .map(List::of)
-                        .orElse(List.of());
+                employees = employeeRepository.findById(UUID.fromString(employeeId)).map(List::of).orElse(List.of());
             } else if (email != null) {
                 employees = employeeRepository.findByEmailContainingIgnoreCase(email);
             } else if (firstName != null) {
@@ -53,34 +51,10 @@ public class EmployeeService {
                 employees = employeeRepository.findAll();
             }
         } else {
-            employees = employeeRepository.findAll();
+            employees = employeeRepository.findAllByIsActiveTrue();
         }
 
-        return employees.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<EmployeeResponse> searchEmployees(String keyword) {
-        List<Employee> employees;
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            employees = employeeRepository.searchEmployees(keyword.trim());
-        } else {
-            employees = employeeRepository.findAll();
-        }
-
-        return employees.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public EmployeeResponse getEmployeeById(UUID id) {
-        Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
-        return convertToResponse(employee);
+        return employees.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Transactional
@@ -106,12 +80,10 @@ public class EmployeeService {
         employee.setEmergencyContactName(request.getEmergencyContactName());
         employee.setEmergencyContactPhone(request.getEmergencyContactPhone());
         employee.setEmergencyContactRelationship(request.getEmergencyContactRelationship());
-       // employee.setPassword(passwordEncoder.encode(request.getPassword()));
         employee.setIsActive(true);
 
         if (request.getManagerId() != null) {
-            Employee manager = employeeRepository.findById(request.getManagerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Manager not found with id: " + request.getManagerId()));
+            Employee manager = employeeRepository.findById(request.getManagerId()).orElseThrow(() -> new ResourceNotFoundException("Manager not found with id: " + request.getManagerId()));
             employee.setManager(manager);
         }
 
@@ -121,8 +93,7 @@ public class EmployeeService {
 
     @Transactional
     public EmployeeResponse updateEmployee(UUID id, UpdateEmployeeRequest request) {
-        Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+        Employee employee = employeeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
 
         if (employeeRepository.existsByEmailAndEmployeeIdNot(request.getEmail(), id)) {
             throw new DuplicateResourceException("Employee with email '" + request.getEmail() + "' already exists");
@@ -151,8 +122,7 @@ public class EmployeeService {
         }
 
         if (request.getManagerId() != null) {
-            Employee manager = employeeRepository.findById(request.getManagerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Manager not found with id: " + request.getManagerId()));
+            Employee manager = employeeRepository.findById(request.getManagerId()).orElseThrow(() -> new ResourceNotFoundException("Manager not found with id: " + request.getManagerId()));
             employee.setManager(manager);
         }
 
@@ -162,8 +132,7 @@ public class EmployeeService {
 
     @Transactional
     public void deleteEmployee(UUID id) {
-        Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+        Employee employee = employeeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
 
         employee.setIsActive(false);
         employeeRepository.save(employee);

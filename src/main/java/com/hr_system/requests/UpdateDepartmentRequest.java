@@ -1,4 +1,4 @@
-package com.hr_system.dto;
+package com.hr_system.requests;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateDepartmentRequest {
+public class UpdateDepartmentRequest {
     
     @NotBlank(message = "Department name is required")
     private String departmentName;
@@ -19,5 +19,5 @@ public class CreateDepartmentRequest {
     @NotNull(message = "Country is required")
     private UUID countryId;
     
-    private Boolean isActive = true;
+    private Boolean isActive;
 }

@@ -2,26 +2,27 @@ package com.hr_system.repository;
 
 import com.hr_system.entity.Region;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface RegionRepository extends JpaRepository<Region, UUID> {
+    @Modifying
+    @Transactional
+    @Query("""
+                delete from Region r
+                where r.regionId = :id
+            """)
+    void delete(@Param("id") UUID id);
 
-    List<Region> findByRegionId(UUID regionId);
+    List<Region> findByIsActiveTrue();
 
-    List<Region> findByRegionName(String regionName);
-
-    List<Region> findByDescriptionContainingIgnoreCase(String description);
-
-    List<Region> findByIsActive(Boolean isActive);
-
-    @Query("SELECT r FROM Region r WHERE " +
-            "LOWER(r.regionName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Region> searchRegions(@Param("keyword") String keyword);
+    Optional<Region> findByRegionIdAndIsActiveTrue(UUID regionId);
 }

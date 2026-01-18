@@ -1,4 +1,4 @@
-package com.hr_system.dto;
+package com.hr_system.requests;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +12,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateEmployeeLeaveRequest {
+public class CreateEmployeeLeaveRequest {
 
     @NotNull(message = "Employee is required")
     private UUID employeeId;
@@ -26,5 +26,5 @@ public class UpdateEmployeeLeaveRequest {
     @NotNull(message = "End date is required")
     private LocalDate endDate;
 
-    private Boolean approved;
+    private Boolean approved = false;
 }

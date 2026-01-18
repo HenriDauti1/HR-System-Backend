@@ -1,4 +1,4 @@
-package com.hr_system.dto;
+package com.hr_system.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,14 +12,15 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContractResponse {
-    private UUID contractId;
+public class PayrollResponse {
+    private UUID payrollId;
     private UUID employeeId;
     private String employeeName;
-    private String contractType;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private BigDecimal salary;
+    private LocalDate payPeriodStart;
+    private LocalDate payPeriodEnd;
+    private BigDecimal grossSalary;
+    private BigDecimal netSalary;
+    private OffsetDateTime paidAt;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 }

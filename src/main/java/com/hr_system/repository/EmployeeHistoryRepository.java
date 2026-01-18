@@ -13,36 +13,8 @@ import java.util.UUID;
 @Repository
 public interface EmployeeHistoryRepository extends JpaRepository<EmployeeHistory, UUID> {
 
-    List<EmployeeHistory> findByEmployee_EmployeeId(UUID employeeId);
+    List<EmployeeHistory> findAllByEmployee_IsActiveTrue();
 
-    List<EmployeeHistory> findByEmployeeHistoryId(UUID employeeHistoryId);
-
-    List<EmployeeHistory> findByDepartment_DepartmentId(UUID departmentId);
-
-    List<EmployeeHistory> findByDepartment_DepartmentName(String departmentName);
-
-    List<EmployeeHistory> findByPosition_PositionId(UUID positionId);
-
-    List<EmployeeHistory> findByPosition_PositionName(String positionName);
-
-    @Query("SELECT eh FROM EmployeeHistory eh WHERE " +
-            "LOWER(CONCAT(eh.employee.firstName, ' ', eh.employee.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))")
-    List<EmployeeHistory> findByEmployeeNameContaining(@Param("name") String name);
-
-    @Query("SELECT eh FROM EmployeeHistory eh WHERE " +
-            "eh.employee.employeeId = :employeeId AND " +
-            "eh.employeeHistoryId <> :excludeId AND " +
-            "((eh.validFrom <= :validTo AND (eh.validTo IS NULL OR eh.validTo >= :validFrom)))")
-    List<EmployeeHistory> findOverlappingHistory(
-            @Param("employeeId") UUID employeeId,
-            @Param("validFrom") OffsetDateTime validFrom,
-            @Param("validTo") OffsetDateTime validTo,
-            @Param("excludeId") UUID excludeId
-    );
-
-    @Query("SELECT eh FROM EmployeeHistory eh WHERE " +
-            "LOWER(CONCAT(eh.employee.firstName, ' ', eh.employee.lastName)) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(eh.department.departmentName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(eh.position.positionName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<EmployeeHistory> searchEmployeeHistories(@Param("keyword") String keyword);
+    @Query("SELECT eh FROM EmployeeHistory eh WHERE " + "eh.employee.employeeId = :employeeId AND " + "eh.employeeHistoryId <> :excludeId AND " + "eh.employee.isActive = true AND " + "((eh.validFrom <= :validTo AND (eh.validTo IS NULL OR eh.validTo >= :validFrom)))")
+    List<EmployeeHistory> findOverlappingHistory(@Param("employeeId") UUID employeeId, @Param("validFrom") OffsetDateTime validFrom, @Param("validTo") OffsetDateTime validTo, @Param("excludeId") UUID excludeId);
 }

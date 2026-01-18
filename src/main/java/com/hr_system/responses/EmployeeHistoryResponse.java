@@ -1,4 +1,4 @@
-package com.hr_system.dto;
+package com.hr_system.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,12 +10,16 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DepartmentResponse {
+public class EmployeeHistoryResponse {
+    private UUID employeeHistoryId;
+    private UUID employeeId;
+    private String employeeName;
     private UUID departmentId;
     private String departmentName;
-    private UUID countryId;
-    private String countryName;
-    private Boolean isActive;
+    private UUID positionId;
+    private String positionName;
+    private OffsetDateTime validFrom;
+    private OffsetDateTime validTo;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 }

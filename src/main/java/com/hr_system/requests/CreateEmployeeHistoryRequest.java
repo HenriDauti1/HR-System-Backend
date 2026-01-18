@@ -1,4 +1,4 @@
-package com.hr_system.dto;
+package com.hr_system.requests;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateEmployeeHistoryRequest {
+public class CreateEmployeeHistoryRequest {
     
     @NotNull(message = "Employee is required")
     private UUID employeeId;

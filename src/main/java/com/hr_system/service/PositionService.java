@@ -1,18 +1,17 @@
 package com.hr_system.service;
 
-import com.hr_system.dto.CreatePositionRequest;
-import com.hr_system.dto.PositionResponse;
-import com.hr_system.dto.UpdatePositionRequest;
 import com.hr_system.entity.Position;
 import com.hr_system.exception.DuplicateResourceException;
 import com.hr_system.exception.ResourceNotFoundException;
 import com.hr_system.repository.PositionRepository;
+import com.hr_system.requests.CreatePositionRequest;
+import com.hr_system.requests.UpdatePositionRequest;
+import com.hr_system.responses.PositionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,52 +22,9 @@ public class PositionService {
     private final PositionRepository positionRepository;
 
     @Transactional(readOnly = true)
-    public List<PositionResponse> getAllPositions(Map<String, String> filterParams) {
-        List<Position> positions;
-
-        if (filterParams != null && !filterParams.isEmpty()) {
-            String positionId = filterParams.get("positionId");
-            String positionName = filterParams.get("positionName");
-            String isActive = filterParams.get("isActive");
-
-            if (positionId != null) {
-                positions = positionRepository.findByPositionId(UUID.fromString(positionId));
-            } else if (positionName != null) {
-                positions = positionRepository.findByPositionNameContainingIgnoreCase(positionName);
-            } else if (isActive != null) {
-                positions = positionRepository.findByIsActive(Boolean.parseBoolean(isActive));
-            } else {
-                positions = positionRepository.findAll();
-            }
-        } else {
-            positions = positionRepository.findAll();
-        }
-
-        return positions.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<PositionResponse> searchPositions(String keyword) {
-        List<Position> positions;
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            positions = positionRepository.searchPositions(keyword.trim());
-        } else {
-            positions = positionRepository.findAll();
-        }
-
-        return positions.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public PositionResponse getPositionById(UUID id) {
-        Position position = positionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Position not found with id: " + id));
-        return convertToResponse(position);
+    public List<PositionResponse> getAllPositions() {
+        List<Position> positions = positionRepository.findAllByIsActiveTrue();
+        return positions.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Transactional
@@ -87,8 +43,7 @@ public class PositionService {
 
     @Transactional
     public PositionResponse updatePosition(UUID id, UpdatePositionRequest request) {
-        Position position = positionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Position not found with id: " + id));
+        Position position = positionRepository.findByPositionIdAndIsActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Position not found with id: " + id));
 
         if (positionRepository.existsByPositionNameAndPositionIdNot(request.getPositionName(), id)) {
             throw new DuplicateResourceException("Position with name '" + request.getPositionName() + "' already exists");
@@ -105,11 +60,8 @@ public class PositionService {
 
     @Transactional
     public void deletePosition(UUID id) {
-        Position position = positionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Position not found with id: " + id));
-
-        position.setIsActive(false);
-        positionRepository.save(position);
+        positionRepository.findByPositionIdAndIsActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Position not found with id: " + id));
+        positionRepository.delete(id);
     }
 
     private PositionResponse convertToResponse(Position position) {

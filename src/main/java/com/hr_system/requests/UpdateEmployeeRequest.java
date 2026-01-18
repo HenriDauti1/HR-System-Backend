@@ -1,4 +1,4 @@
-package com.hr_system.dto;
+package com.hr_system.requests;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +13,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateEmployeeRequest {
+public class UpdateEmployeeRequest {
 
     @NotBlank(message = "First name is required")
     private String firstName;
@@ -53,12 +53,10 @@ public class CreateEmployeeRequest {
     @NotNull(message = "Hire date is required")
     private LocalDate hireDate;
 
+    private LocalDate terminationDate;
     private UUID managerId;
-
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String emergencyContactRelationship;
-
-    @NotBlank(message = "Password is required")
-    private String password;
+    private Boolean isActive;
 }
