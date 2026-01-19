@@ -1,5 +1,6 @@
 package com.hr_system.service;
 
+import com.hr_system.dto.TotalEmployeesAndChangesDto;
 import com.hr_system.entity.Employee;
 import com.hr_system.exception.DuplicateResourceException;
 import com.hr_system.exception.ResourceNotFoundException;
@@ -136,6 +137,16 @@ public class EmployeeService {
 
         employee.setIsActive(false);
         employeeRepository.save(employee);
+    }
+
+    public TotalEmployeesAndChangesDto getTotalEmployees(){
+        int totalEmployees = employeeRepository.countByIsActiveTrue();
+        int newHiresLastMonth = employeeRepository.lastMonthCount();
+        float percentageChange = totalEmployees == 0 ? 0 : ((float) newHiresLastMonth / totalEmployees) * 100;
+        TotalEmployeesAndChangesDto dto = new TotalEmployeesAndChangesDto();
+        dto.setTotalEmployees(totalEmployees);
+        dto.setChangeFromLastMonthPercent(percentageChange);
+        return dto;
     }
 
     private EmployeeResponse convertToResponse(Employee employee) {

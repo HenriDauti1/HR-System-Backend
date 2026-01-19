@@ -1,7 +1,6 @@
 package com.hr_system.repository;
 
 import com.hr_system.entity.Employee;
-import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +18,18 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
 
     boolean existsByEmailAndEmployeeIdNot(String email, UUID employeeId);
 
+    int countByIsActiveTrue();
+
+    @Query(value = """
+            SELECT COUNT(*)
+            FROM "HR Database".employee e
+            WHERE e.hire_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '1 month'
+              AND e.hire_date <  date_trunc('month', CURRENT_DATE)
+              AND e.is_active = true
+        """,
+        nativeQuery = true)
+    int lastMonthCount();
+
     List<Employee> findByEmailContainingIgnoreCase(String email);
 
     List<Employee> findAllByIsActiveTrue();
@@ -34,9 +45,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
     List<Employee> findByIsActive(Boolean isActive);
 
     @Query("SELECT e FROM Employee e WHERE " +
-            "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(e.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(e.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+        "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+        "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+        "LOWER(e.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+        "LOWER(e.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Employee> searchEmployees(@Param("keyword") String keyword);
 }

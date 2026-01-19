@@ -4,7 +4,6 @@ import com.hr_system.entity.EmployeeLeave;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -19,4 +18,9 @@ public interface EmployeeLeaveRepository extends JpaRepository<EmployeeLeave, UU
     boolean existsByEmployee_EmployeeIdAndStartDateAndEndDate(UUID employeeId, LocalDate startDate, LocalDate endDate);
 
     boolean existsByEmployee_EmployeeIdAndStartDateAndEndDateAndLeaveIdNot(UUID employeeId, LocalDate startDate, LocalDate endDate, UUID leaveId);
+
+    @Query("SELECT COUNT(el) FROM EmployeeLeave el " +
+        "WHERE el.approved IS NULL " +
+        "AND CAST(el.createdAt AS DATE) = CURRENT_DATE")
+    int countPendingLeavesToday();
 }

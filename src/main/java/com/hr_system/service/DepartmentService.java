@@ -1,5 +1,7 @@
 package com.hr_system.service;
 
+import com.hr_system.dto.TotalDepartmentsAndChangeDto;
+import com.hr_system.dto.TotalEmployeesAndChangesDto;
 import com.hr_system.entity.Country;
 import com.hr_system.entity.Department;
 import com.hr_system.exception.DuplicateResourceException;
@@ -71,6 +73,18 @@ public class DepartmentService {
     public void deleteDepartment(UUID id) {
         departmentRepository.findByDepartmentIdAndIsActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + id));
         departmentRepository.delete(id);
+    }
+
+    public TotalDepartmentsAndChangeDto getTotalDepartments() {
+        int totalDepartments = departmentRepository.countByIsActiveTrue();
+        int departmentsAddedLastYear= departmentRepository.lastYearCount();
+        float percentageChange = totalDepartments == 0 ? 0 : ((float) departmentsAddedLastYear / totalDepartments) * 100;
+
+        TotalDepartmentsAndChangeDto dto = new TotalDepartmentsAndChangeDto();
+        dto.setTotalDepartments(totalDepartments);
+        dto.setChangeFromLastYearPercent(percentageChange);
+
+        return dto;
     }
 
     private DepartmentResponse convertToResponse(Department department) {

@@ -1,5 +1,6 @@
 package com.hr_system.service;
 
+import com.hr_system.dto.PendingLeaveRequestsDto;
 import com.hr_system.entity.Employee;
 import com.hr_system.entity.EmployeeLeave;
 import com.hr_system.exception.DuplicateResourceException;
@@ -71,6 +72,10 @@ public class EmployeeLeaveService {
 
         EmployeeLeave updatedLeave = employeeLeaveRepository.save(leave);
         return convertToResponse(updatedLeave);
+    }
+    public PendingLeaveRequestsDto getPendingLeaveRequests() {
+        int pendingCount = employeeLeaveRepository.countPendingLeavesToday();
+        return new PendingLeaveRequestsDto(pendingCount);
     }
 
     private EmployeeLeaveResponse convertToResponse(EmployeeLeave leave) {

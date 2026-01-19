@@ -27,4 +27,16 @@ public interface DepartmentRepository extends JpaRepository<Department, UUID> {
     Optional<Department> findByDepartmentIdAndIsActiveTrue(UUID departmentId);
 
     List<Department> findAllByIsActiveTrue();
+
+    int countByIsActiveTrue();
+
+    @Query(value = """
+            SELECT COUNT(*)
+            FROM "HR Database".department d
+            WHERE d.created_at >= date_trunc('month', CURRENT_DATE) - INTERVAL '1 year'
+              AND d.created_at <  date_trunc('month', CURRENT_DATE)
+              AND d.is_active = true
+        """,
+        nativeQuery = true)
+    int lastYearCount();
 }

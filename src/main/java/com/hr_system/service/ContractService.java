@@ -1,5 +1,6 @@
 package com.hr_system.service;
 
+import com.hr_system.dto.ActiveContractsDto;
 import com.hr_system.entity.Contract;
 import com.hr_system.entity.Employee;
 import com.hr_system.exception.ResourceNotFoundException;
@@ -67,6 +68,12 @@ public class ContractService {
 
         Contract updatedContract = contractRepository.save(contract);
         return convertToResponse(updatedContract);
+    }
+
+    public ActiveContractsDto getTotalContracts() {
+        int totalContracts = contractRepository.countByEndDateIsNull();
+        int changeFromLastMonthPercent = contractRepository.countLastMonthActiveContracts();
+        return new ActiveContractsDto(totalContracts, changeFromLastMonthPercent);
     }
 
     private ContractResponse convertToResponse(Contract contract) {
