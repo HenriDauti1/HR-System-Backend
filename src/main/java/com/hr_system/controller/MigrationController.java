@@ -29,7 +29,7 @@ public class MigrationController {
                     "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_dump.exe",
                     "-h", "20.56.162.184",
                     "-p", "5432",
-                    "-U", "DetKursi",
+                    "-U", "hr_admin_user",
                     "-F", "c",
                     "-b",
                     "-v",

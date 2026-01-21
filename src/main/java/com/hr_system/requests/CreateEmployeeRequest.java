@@ -58,7 +58,4 @@ public class CreateEmployeeRequest {
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String emergencyContactRelationship;
-
-    @NotBlank(message = "Password is required")
-    private String password;
 }

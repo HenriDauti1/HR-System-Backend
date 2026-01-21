@@ -27,28 +27,28 @@ public class StatisticsController {
     private final EmployeeLeaveService employeeLeaveService;
 
     @GetMapping("/total-employees")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') OR hasRole('READER')")
     public ResponseEntity<ApiResponse<TotalEmployeesAndChangesDto>> getTotalEmployees() {
         TotalEmployeesAndChangesDto totalEmployeesDTO = employeeService.getTotalEmployees();
         return ResponseEntity.status(200).body(ApiResponseUtils.createResponse("success", "Total employees retrieved successfully", totalEmployeesDTO));
     }
 
     @GetMapping("/total-departments")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') OR hasRole('READER')")
     public ResponseEntity<ApiResponse<TotalDepartmentsAndChangeDto>> getTotalDepartments() {
         TotalDepartmentsAndChangeDto totalDepartmentsDTO = departmentService.getTotalDepartments();
         return ResponseEntity.status(200).body(ApiResponseUtils.createResponse("success", "Total departments retrieved successfully", totalDepartmentsDTO));
     }
 
     @GetMapping("/total-contracts")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') OR hasRole('READER')")
     public ResponseEntity<ApiResponse<ActiveContractsDto>> getTotalContracts() {
         ActiveContractsDto totalContracts = contractService.getTotalContracts();
         return ResponseEntity.status(200).body(ApiResponseUtils.createResponse("success", "Total contracts retrieved successfully", totalContracts));
     }
 
     @GetMapping("/total-leaves-today")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') OR hasRole('READER')")
     public ResponseEntity<ApiResponse<PendingLeaveRequestsDto>> getTotalLeavesToday() {
         PendingLeaveRequestsDto pendingLeavesDto = employeeLeaveService.getPendingLeaveRequests();
         return ResponseEntity.status(200).body(ApiResponseUtils.createResponse("success", "Total leaves today retrieved successfully", pendingLeavesDto));
